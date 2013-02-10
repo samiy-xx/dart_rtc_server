@@ -1,5 +1,7 @@
 name:  dart_rtc_server
 description:  A Dart WebRTC signaling server
+author: Sami Ylonen <sami.ylonen@gmail.com>
+version: 0.1.0
 
 dependencies:
   unittest: 0.3.4
