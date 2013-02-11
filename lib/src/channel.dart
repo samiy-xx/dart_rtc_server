@@ -30,7 +30,7 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
    * Limit of users in channel
    */
   int get channelLimit => _limit;
-  set channelLimit(int i) => _limit = i;
+  set channelLimit(int i) => setChannelLimit(i);
   /**
    * Current usercount
    */
@@ -56,6 +56,16 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
   void onClose(User u, int status, String reason) {
     new Logger().Debug("(channel.dart) onClose fired for user ${u.id}");
     leave(u);
+  }
+  
+  /**
+   * Sets the channel user limit and notifies all users in channel.
+   */
+  void setChannelLimit(int l) {
+    _limit = l;
+    _users.forEach((User u) {
+      _container.getServer().sendPacket(u.connection, new ChannelPacket.With(u.id, id, u == owner, userCount, _limit));
+    });
   }
   
   /**
@@ -182,6 +192,7 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
     _users.forEach((User u) {
         if (u.isDead)
           print("WARN: user ${u.id} is dead");
+        
         _container.getServer().sendPacket(u.connection, p);
     });
   }

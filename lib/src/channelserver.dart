@@ -7,6 +7,7 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
     registerHandler(PacketType.PEERCREATED, handlePeerCreated);
     registerHandler(PacketType.USERMESSAGE, handleUserMessage);
     registerHandler(PacketType.CHANNELMESSAGE, handleChannelMessage);
+    registerHandler(PacketType.SETCHANNELVARS, handleChannelvars);
     
     _channelContainer = new ChannelContainer(this);
     _channelContainer.subscribe(this);
@@ -60,6 +61,28 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
     
     if (user != null && other != null)
       user.talkTo(other);
+  }
+  
+  void handleChannelvars(SetChannelVarsCommand cm, WebSocketConnection c) {
+    if (cm.channelId == null || cm.channelId.isEmpty) 
+      return;
+    
+    Channel channel = _channelContainer.findChannel(cm.channelId);
+    User user = _container.findUserByConn(c);
+    
+    if (user == null) {
+      new Logger().Warning("(channelserver.dart) User was not found");
+      return;
+    }
+    
+    if (channel == null) {
+      new Logger().Warning("(channelserver.dart) Channel was not found");
+      return;
+    }
+    
+    if (user == channel.owner) {
+      channel.channelLimit = cm.limit;
+    }
   }
   void handleChannelMessage(ChannelMessage cm, WebSocketConnection c) {
     try {
