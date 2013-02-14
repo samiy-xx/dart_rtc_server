@@ -49,6 +49,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     registerHandler(PacketType.DESC, handleIncomingDescription);
     registerHandler(PacketType.ICE, handleIncomingIce);
     registerHandler(PacketType.FILE, handleIncomingFile);
+    registerHandler(PacketType.CHANGENICK, handleIncomingNick);
   }
   
   /**
@@ -149,7 +150,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
    */
   void doAliveChecks() {
     
-    int currentTime = new Date.now().millisecondsSinceEpoch;
+    int currentTime = new DateTime.now().millisecondsSinceEpoch;
     List<User> users = _container.getUsers();
     
     for (int i = 0; i < users.length; i++) {
@@ -221,11 +222,26 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     sendPacket(c, new ConnectionSuccessPacket.With(u.id));
   }
   
+  void handleIncomingNick(ChangeNickCommand p, WebSocketConnection c) {
+    User u = _container.findUserByConn(c);
+    if (u == null)
+      return;
+    
+    u.lastActivity = new DateTime.now().millisecondsSinceEpoch;
+    
+    if (!_container.nickExists(p.newId)) {
+      u.id = p.newId;
+      sendPacket(u.connection, p);
+      // TODO: Notify talkers
+    }
+  }
+  
   void handleIncomingBye(ByePacket p, WebSocketConnection c) {
     User u = _container.findUserByConn(c);
     if (u != null)
       u.terminate();
   }
+  
   /**
    * Handle the incoming sdp description
    */
@@ -238,13 +254,13 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
         logger.Warning("Sender or Receiver not found");
         return;
       }
-      sender.lastActivity = new Date.now().millisecondsSinceEpoch;
+      sender.lastActivity = new DateTime.now().millisecondsSinceEpoch;
       
       if (sender == receiver) {
         logger.Warning("Sending to self, abort");
         return;
       }
-      receiver.lastActivity = new Date.now().millisecondsSinceEpoch;
+      receiver.lastActivity = new DateTime.now().millisecondsSinceEpoch;
       
       sender.talkTo(receiver);
       
@@ -266,13 +282,13 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
         logger.Warning("Sender or Receiver not found");
         return;
       }
-      sender.lastActivity = new Date.now().millisecondsSinceEpoch;
+      sender.lastActivity = new DateTime.now().millisecondsSinceEpoch;
       
       if (sender == receiver) {
         logger.Warning("Sending to self, abort");
         return;
       }
-      receiver.lastActivity = new Date.now().millisecondsSinceEpoch;
+      receiver.lastActivity = new DateTime.now().millisecondsSinceEpoch;
       
       sendPacket(receiver.connection, new IcePacket.With(ice.candidate, ice.sdpMid, ice.sdpMLineIndex, sender.id));
     } catch(e) {
@@ -287,7 +303,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     try {
       logger.Debug("Handling pong");
       User sender = _container.findUserByConn(c);
-      sender.lastActivity = new Date.now().millisecondsSinceEpoch;
+      sender.lastActivity = new DateTime.now().millisecondsSinceEpoch;
     } catch(e) {
       logger.Error("handleIncomingPong: $e");
     }
@@ -305,8 +321,8 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
         return;
       }
       
-      sender.lastActivity = new Date.now().millisecondsSinceEpoch;
-      receiver.lastActivity = new Date.now().millisecondsSinceEpoch;
+      sender.lastActivity = new DateTime.now().millisecondsSinceEpoch;
+      receiver.lastActivity = new DateTime.now().millisecondsSinceEpoch;
       
       p.id = sender.id;
       sendPacket(receiver.connection, p);

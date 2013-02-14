@@ -127,7 +127,10 @@ class UserContainer extends BaseUserContainer implements UserConnectionEventList
     
     return u;
   }
-
+  
+  bool nickExists(String nick) {
+    return findUserById(nick) != null;
+  }
   /**
    * Returns a user with matching id property
    */

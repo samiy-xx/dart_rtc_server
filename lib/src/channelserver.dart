@@ -8,6 +8,7 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
     registerHandler(PacketType.USERMESSAGE, handleUserMessage);
     registerHandler(PacketType.CHANNELMESSAGE, handleChannelMessage);
     registerHandler(PacketType.SETCHANNELVARS, handleChannelvars);
+    registerHandler(PacketType.CHANNELJOIN, handleChannelJoin);
     
     _channelContainer = new ChannelContainer(this);
     _channelContainer.subscribe(this);
@@ -22,30 +23,33 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
     new Logger().Info("Users: ${_container.userCount} Channels: ${_channelContainer.channelCount}");
   }
   
-  // Override
-  void handleIncomingHelo(HeloPacket hp, WebSocketConnection c) {
-    super.handleIncomingHelo(hp, c);
+  void handleIncomingNick(ChangeNickCommand p, WebSocketConnection c) {
+    super.handleIncomingNick(p, c);
     
+    User user = _container.findUserByConn(c);
+    List<Channel> channels = _channelContainer.getChannelsWhereUserIs(user);
+    if (channels.length > 0) {
+      channels.forEach((Channel c) {
+        c.sendToAllExceptSender(user, p);
+      });
+    }
+  }
+  void handleChannelJoin(ChannelJoinCommand p, WebSocketConnection c) {
     try {
-      if (hp.channelId == null || hp.channelId.isEmpty) {
-        c.close(1003, "Specify channel id");
+      if (p.channelId == null || p.channelId.isEmpty) {
         return;
       }
       
       User u = _container.findUserByConn(c);
       
       Channel chan;
-      chan = _channelContainer.findChannel(hp.channelId);
+      chan = _channelContainer.findChannel(p.channelId);
       if (chan != null) {
         if (chan.canJoin) {
           chan.join(u);
-        } else {
-          c.close(1003, "Channel was full");
-          
-          return;
         }
       } else {
-        chan = _channelContainer.createChannelWithId(hp.channelId);
+        chan = _channelContainer.createChannelWithId(p.channelId);
         chan.join(u);
       }
     } catch(e, s) {
@@ -54,7 +58,6 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
     }
   }
   
-
   void handlePeerCreated(PeerCreatedPacket pcp, WebSocketConnection c) {
     User user = _container.findUserByConn(c);
     User other = _container.findUserById(pcp.id);
