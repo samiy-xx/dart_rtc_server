@@ -12,19 +12,19 @@ class WheelServer extends WebSocketServer {
     registerHandler(PacketType.USERMESSAGE, handleUserMessage);
     registerHandler(PacketType.DISCONNECTED, handleDisconnect);
   }
-  
+
   /**
    * Handle Helo packet
    */
-  void handleIncomingHelo(HeloPacket p, WebSocketConnection c) {
+  void handleIncomingHelo(HeloPacket p, WebSocket c) {
     User u = _container.createUser(c);
     sendPacket(c, new ConnectionSuccessPacket.With(u.id));
   }
-  
+
   /**
    * Handle Bye packet
    */
-  void handleIncomingBye(ByePacket p, WebSocketConnection c) {
+  void handleIncomingBye(ByePacket p, WebSocket c) {
     User user = _container.findUserByConn(c);
     if (user.isTalking) {
       for (int i = 0; i < user.talkers.length; i++) {
@@ -35,8 +35,8 @@ class WheelServer extends WebSocketServer {
     _container.removeUser(user);
     user.terminate();
   }
-  
-  void handleDisconnect(Disconnected dc, WebSocketConnection c) {
+
+  void handleDisconnect(Disconnected dc, WebSocket c) {
     try {
       User user = _container.findUserByConn(c);
       if (user.isTalking) {
@@ -54,10 +54,10 @@ class WheelServer extends WebSocketServer {
   /**
    * Handle random user request packet
    */
-  void handleRandomUserRequest(RandomUserPacket p, WebSocketConnection c) {
+  void handleRandomUserRequest(RandomUserPacket p, WebSocket c) {
     try {
       User user = _container.findUserByConn(c);
-      
+
       if (user.isTalking) {
         for (int i = 0; i < user.talkers.length; i++) {
           User other = user.talkers[i];
@@ -66,7 +66,7 @@ class WheelServer extends WebSocketServer {
         }
         user.talkers.clear();
       }
-      
+
       User rnd = _container.findRandomUser(user);
       if (rnd != null) {
         // TODO: Fix. use user id as first parameter on both packets
@@ -79,8 +79,8 @@ class WheelServer extends WebSocketServer {
       print("Fucked up: $e");
     }
   }
-  
-  void handleUserMessage(UserMessage um, WebSocketConnection c) {
+
+  void handleUserMessage(UserMessage um, WebSocket c) {
     try {
       if (um.id == null || um.id.isEmpty) {
         print ("id was null or empty");
@@ -88,16 +88,16 @@ class WheelServer extends WebSocketServer {
       }
       User user = _container.findUserByConn(c);
       User other = _container.findUserById(um.id);
-      
+
       if (user == null || other == null) {
         print("user wass not found");
         return;
       }
-      
+
       um.id = user.id;
-      
+
       sendPacket(other.connection, um);
-      
+
     } on NoSuchMethodError catch(e) {
       print("Somethign was null: $e");
     } catch(e) {
