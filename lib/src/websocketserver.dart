@@ -23,7 +23,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
   int _sessionTimeout = 2;
 
   // 1 minute
-  int _timerTickInterval = 6000;
+  const int _timerTickInterval = 6000;
 
   Logger logger = new Logger();
 
@@ -39,7 +39,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     //_wsHandler = new WebSocketHandler();
     _container = new UserContainer(this);
     _container.subscribe(this);
-    _timer = new Timer.repeating(_timerTickInterval, onTimerTick);
+    _timer = new Timer.repeating(const Duration(milliseconds: 6000), onTimerTick);
     _reader = new BinaryReader();
 
     // Register handlers needed to handle on this low level
@@ -78,24 +78,23 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
       _httpServer = server;
 
       server.transform(new WebSocketTransformer()).listen((WebSocket webSocket) {
-
-        webSocket.listen((event) {
-          print(event);
-          if (event is MessageEvent) {
-            Packet p = getPacket(event.data);
+        
+        webSocket.listen((data) {
+            Packet p = getPacket(data);
             if (p != null) {
               logger.Debug("Incoming packet (${p.packetType})");
               if (!executeHandlerFor(webSocket, p))
                 logger.Warning("No handler found for packet (${p.packetType})");
             }
-          } else if (event is CloseEvent) {
+            
+        }).onDone(() {
+          
             print("CLOSEEVENT");
             User u = _container.findUserByConn(webSocket);
             print(u);
-            CloseEvent cevent = event;
-            u._onClose(cevent.code, cevent.reason);
+            //CloseEvent cevent = event;
+            u._onClose(1000, "something");
             //webSocket.close(1000, "blaa");
-          }
         });
       });
     });
