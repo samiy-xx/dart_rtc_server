@@ -39,7 +39,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     //_wsHandler = new WebSocketHandler();
     _container = new UserContainer(this);
     _container.subscribe(this);
-    _timer = new Timer.repeating(const Duration(milliseconds: 6000), onTimerTick);
+    _timer = new Timer.periodic(const Duration(milliseconds: 6000), onTimerTick);
     _reader = new BinaryReader();
 
     // Register handlers needed to handle on this low level
@@ -87,15 +87,19 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
                 logger.Warning("No handler found for packet (${p.packetType})");
             }
             
-        }).onDone(() {
-          
-            print("CLOSEEVENT");
+        }, onDone : () {
+            
             User u = _container.findUserByConn(webSocket);
-            print(u);
-            //CloseEvent cevent = event;
-            u._onClose(1000, "something");
-            //webSocket.close(1000, "blaa");
+            u._onClose(webSocket.closeCode, webSocket.closeReason);
+            new Logger().Debug("User ${u.id} closed connection (${webSocket.closeCode}) (${webSocket.closeReason})");
+        }, onError : (AsyncError e) {
+          User u = _container.findUserByConn(webSocket);
+          if (u != null)
+            u._onClose(webSocket.closeCode, webSocket.closeReason);
+          new Logger().Error("Error, removing user ${u.id}");
+          
         });
+        
       });
     });
   }
@@ -114,26 +118,6 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     if (readFrom != null)
       p = PacketFactory.getPacketFromString(readFrom);
     return p;
-  }
-
-  void run() {
-    /*_wsHandler.onOpen = (WebSocketConnection conn) {
-      try {
-        conn.onMessage = (message) {
-          Packet p = getPacket(message);
-          if (p != null) {
-            logger.Debug("Incoming packet (${p.packetType})");
-            if (!executeHandlerFor(conn, p))
-              logger.Warning("No handler found for packet (${p.packetType})");
-          }
-        };
-
-      } on Exception catch(e) {
-        logger.Error("run: Exception onMessage: $e");
-      } catch(e) {
-        logger.Error("run: Error onMessage: $e");
-      }
-    };*/
   }
 
   void onCountChanged(BaseContainer bc) {

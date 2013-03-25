@@ -49,7 +49,7 @@ class _User extends GenericEventTarget<UserEventListener> implements Comparable 
   _User.With(this._container, this._id) {
     _talkingTo = new List<User>();
 
-    var t = new Date.now().millisecondsSinceEpoch;
+    var t = new DateTime.now().millisecondsSinceEpoch;
     _lastActivity = t;
     _timeSinceLastConnection = t;
   }

@@ -76,7 +76,7 @@ class QueueChannel extends Channel implements UserConnectionEventListener {
   }
   
   void _insertIntoQueue(User u) {
-    _queue.addLast(u);
+    _queue.add(u);
     listeners.where((l) => l is ChannelQueueEventListener).forEach((ChannelQueueEventListener l) {
       l.onEnterQueue(this, u, _queue.length, _queue.indexOf(u));
     });
