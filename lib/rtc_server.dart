@@ -8,8 +8,8 @@ import 'dart:isolate';
 import 'dart:async';
 import 'dart:scalarlist';
 
-//import '../../dart_rtc_common/lib/rtc_common.dart';
-import 'package:dart_rtc_common/rtc_common.dart';
+import '../../dart_rtc_common/lib/rtc_common.dart';
+//import 'package:dart_rtc_common/rtc_common.dart';
 
 
 part "src/server.dart";

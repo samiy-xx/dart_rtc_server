@@ -4,11 +4,11 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
   ChannelContainer _channelContainer;
 
   ChannelServer() : super() {
-    registerHandler(PacketType.PEERCREATED, handlePeerCreated);
-    registerHandler(PacketType.USERMESSAGE, handleUserMessage);
-    registerHandler(PacketType.CHANNELMESSAGE, handleChannelMessage);
-    registerHandler(PacketType.SETCHANNELVARS, handleChannelvars);
-    registerHandler(PacketType.CHANNELJOIN, handleChannelJoin);
+    registerHandler(PACKET_TYPE_PEERCREATED, handlePeerCreated);
+    registerHandler(PACKET_TYPE_USERMESSAGE, handleUserMessage);
+    registerHandler(PACKET_TYPE_CHANNELMESSAGE, handleChannelMessage);
+    registerHandler(PACKET_TYPE_SETCHANNELVARS, handleChannelvars);
+    registerHandler(PACKET_TYPE_CHANNELJOIN, handleChannelJoin);
 
     _channelContainer = new ChannelContainer(this);
     _channelContainer.subscribe(this);

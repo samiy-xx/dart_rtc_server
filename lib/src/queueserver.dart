@@ -5,10 +5,10 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
 
   QueueServer() : super() {
 
-    registerHandler(PacketType.PEERCREATED, handlePeerCreated);
-    registerHandler(PacketType.USERMESSAGE, handleUserMessage);
-    registerHandler(PacketType.NEXT, handleNextUser);
-    registerHandler(PacketType.REMOVEUSER, handleRemoveUserCommand);
+    registerHandler(PACKET_TYPE_PEERCREATED, handlePeerCreated);
+    registerHandler(PACKET_TYPE_USERMESSAGE, handleUserMessage);
+    registerHandler(PACKET_TYPE_NEXT, handleNextUser);
+    registerHandler(PACKET_TYPE_REMOVEUSER, handleRemoveUserCommand);
 
     _queueContainer = new QueueContainer(this);
     _queueContainer.subscribe(this);
