@@ -88,6 +88,7 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
     }
   }
   void handleChannelMessage(ChannelMessage cm, WebSocket c) {
+    new Logger().Debug("Handling channel message to channel ${cm.channelId}");
     try {
 
       if (cm.channelId == null || cm.channelId.isEmpty)
@@ -102,6 +103,7 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
 
       Channel channel = _channelContainer.findChannel(cm.channelId);
       if (channel.isInChannel(user)) {
+        new Logger().Debug("Sending to all users in channel");
         channel.sendToAllExceptSender(user, cm);
       }
 
