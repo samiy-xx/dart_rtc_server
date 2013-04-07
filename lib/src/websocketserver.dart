@@ -43,13 +43,13 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     _reader = new BinaryReader();
 
     // Register handlers needed to handle on this low level
-    registerHandler(PacketType.HELO, handleIncomingHelo);
-    registerHandler(PacketType.BYE, handleIncomingBye);
-    registerHandler(PacketType.PONG, handleIncomingPong);
-    registerHandler(PacketType.DESC, handleIncomingDescription);
-    registerHandler(PacketType.ICE, handleIncomingIce);
-    registerHandler(PacketType.FILE, handleIncomingFile);
-    registerHandler(PacketType.CHANGENICK, handleIncomingNick);
+    registerHandler(PACKET_TYPE_HELO, handleIncomingHelo);
+    registerHandler(PACKET_TYPE_BYE, handleIncomingBye);
+    registerHandler(PACKET_TYPE_PONG, handleIncomingPong);
+    registerHandler(PACKET_TYPE_DESC, handleIncomingDescription);
+    registerHandler(PACKET_TYPE_ICE, handleIncomingIce);
+    registerHandler(PACKET_TYPE_FILE, handleIncomingFile);
+    registerHandler(PACKET_TYPE_CHANGENICK, handleIncomingNick);
   }
 
   /**
@@ -78,7 +78,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
       _httpServer = server;
 
       server.transform(new WebSocketTransformer()).listen((WebSocket webSocket) {
-        
+
         webSocket.listen((data) {
             Packet p = getPacket(data);
             if (p != null) {
@@ -86,9 +86,9 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
               if (!executeHandlerFor(webSocket, p))
                 logger.Warning("No handler found for packet (${p.packetType})");
             }
-            
+
         }, onDone : () {
-            
+
             User u = _container.findUserByConn(webSocket);
             if (u != null) {
               u._onClose(webSocket.closeCode, webSocket.closeReason);
@@ -101,7 +101,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
             new Logger().Error("Error, removing user ${u.id}");
           }
         });
-        
+
       });
     });
   }
