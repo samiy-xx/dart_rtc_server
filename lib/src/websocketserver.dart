@@ -113,8 +113,8 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     if (m is String) {
       readFrom = (m as String);
     } else {
-      _reader.readChunk(m);
-      readFrom = _reader.getCompleted();
+      //_reader.readChunk(m);
+      //readFrom = _reader.getCompleted();
     }
 
     if (readFrom != null)

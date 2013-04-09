@@ -112,12 +112,12 @@ class QueueChannelTests {
         c.join(toBeMovedInQueue);
         c.leave(c.users[0]);
         c.next();
-        Timer t = new Timer(100, (_) {
+        /*Timer t = new Timer(100, (_) {
           expect(enteredQueue, equals(true));
           expect(leftQueue, equals(true));
           expect(movedInQueue, equals(true));
           expect(joinedQueueCount, equals(2));
-        });
+        });*/
       });
     });
 

@@ -101,10 +101,12 @@ class ChannelTests {
         c.join(u);
         c.leave(u);
 
-        Timer t = new Timer(100, (_) {
-          expect(wasJoined, equals(true));
-          expect(wasLeft, equals(true));
-        });
+        expect(wasJoined, equals(true));
+        expect(wasLeft, equals(true));
+        //Timer t = new Timer(100, (_) {
+        //  expect(wasJoined, equals(true));
+        //  expect(wasLeft, equals(true));
+        //});
 
       });
 
@@ -118,18 +120,18 @@ class ChannelTests {
 
         c.join(second);
         expect(server.packetsSent.length, equals(4));
-        expect(server.packetsSent[0].packetType, equals(PacketType.CHANNEL));
-        expect(server.packetsSent[1].packetType, equals(PacketType.JOIN));
+        expect(server.packetsSent[0].packetType, equals(PACKET_TYPE_CHANNEL));
+        expect(server.packetsSent[1].packetType, equals(PACKET_TYPE_JOIN));
         expect(server.packetsSent[1].id, equals(second.id));
-        expect(server.packetsSent[2].packetType, equals(PacketType.ID));
+        expect(server.packetsSent[2].packetType, equals(PACKET_TYPE_ID));
         expect(server.packetsSent[2].id, equals(first.id));
 
         c.join(third);
         expect(server.packetsSent.length, equals(9));
-        expect(server.packetsSent[2].packetType, equals(PacketType.ID));
-        expect(server.packetsSent[3].packetType, equals(PacketType.CHANNEL));
-        expect(server.packetsSent[4].packetType, equals(PacketType.JOIN));
-        expect(server.packetsSent[5].packetType, equals(PacketType.ID));
+        expect(server.packetsSent[2].packetType, equals(PACKET_TYPE_ID));
+        expect(server.packetsSent[3].packetType, equals(PACKET_TYPE_CHANNEL));
+        expect(server.packetsSent[4].packetType, equals(PACKET_TYPE_JOIN));
+        expect(server.packetsSent[5].packetType, equals(PACKET_TYPE_ID));
       });
 
       test("Channel, Leaving channel, Packet gets sent", () {
@@ -145,8 +147,8 @@ class ChannelTests {
 
         c.leave(first);
         expect(server.packetsSent.length, equals(2));
-        expect(server.packetsSent[0].packetType, equals(PacketType.BYE));
-        expect(server.packetsSent[1].packetType, equals(PacketType.BYE));
+        expect(server.packetsSent[0].packetType, equals(PACKET_TYPE_BYE));
+        expect(server.packetsSent[1].packetType, equals(PACKET_TYPE_BYE));
       });
     });
 
