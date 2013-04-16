@@ -108,7 +108,7 @@ class _User extends GenericEventTarget<UserEventListener> implements Comparable 
       throw new ArgumentError("Cannot compare to anything else but User");
 
     int toReturn;
-
+    other = other as _User;
     if (_timeSinceLastConnection < other.timeSinceLastConnection)
       toReturn = -1;
     else if (_timeSinceLastConnection > other.timeSinceLastConnection)

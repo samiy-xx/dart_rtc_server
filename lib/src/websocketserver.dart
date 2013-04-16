@@ -94,7 +94,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
               u._onClose(webSocket.closeCode, webSocket.closeReason);
               new Logger().Debug("User ${u.id} closed connection (${webSocket.closeCode}) (${webSocket.closeReason})");
             }
-        }, onError : (AsyncError e) {
+        }, onError : ( e) {
           User u = _container.findUserByConn(webSocket);
           if (u != null) {
             u._onClose(webSocket.closeCode, webSocket.closeReason);
