@@ -181,7 +181,8 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
    */
   void sendToClient(WebSocket c, String p) {
     try {
-      c.send(p);
+
+      c.add(p);
     } catch(e, s) {
       logger.Debug("Socket Dead? removing connection.");
       try {
