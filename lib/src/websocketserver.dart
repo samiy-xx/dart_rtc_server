@@ -74,7 +74,8 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     _port = port;
 
     logger.Info("Starting server on ip $ip and port $port");
-    HttpServer.bind(_ip, _port, 0).then((HttpServer server) {
+
+    HttpServer.bind(_ip, _port).then((HttpServer server) {
       _httpServer = server;
 
       server.transform(new WebSocketTransformer()).listen((WebSocket webSocket) {
@@ -94,12 +95,12 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
               u._onClose(webSocket.closeCode, webSocket.closeReason);
               new Logger().Debug("User ${u.id} closed connection (${webSocket.closeCode}) (${webSocket.closeReason})");
             }
-        }, onError : ( e) {
+        }, onError : ( e) {/*
           User u = _container.findUserByConn(webSocket);
           if (u != null) {
             u._onClose(webSocket.closeCode, webSocket.closeReason);
             new Logger().Error("Error, removing user ${u.id}");
-          }
+          }*/
         });
 
       });
@@ -180,9 +181,15 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
    * @param p Packet to send
    */
   void sendToClient(WebSocket c, String p) {
-    try {
-
-      c.add(p);
+    new Timer(const Duration(milliseconds: 500), () {
+      try {
+        c.add(p);
+      } catch(e) {}
+    });
+    /*try {
+      //new Timer.run(() {
+        c.add(p);
+      //});
     } catch(e, s) {
       logger.Debug("Socket Dead? removing connection.");
       try {
@@ -199,7 +206,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
       } catch (e, s) {
         logger.Debug("Last catch, sendToClient $e, $s");
       }
-    }
+    }*/
   }
 
   void handleIncomingHelo(HeloPacket p, WebSocket c) {
