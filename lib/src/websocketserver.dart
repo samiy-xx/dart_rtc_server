@@ -23,7 +23,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
   int _sessionTimeout = 2;
 
   // 1 minute
-  const int _timerTickInterval = 6000;
+  static const int _timerTickInterval = 6000;
 
   Logger logger = new Logger();
 
