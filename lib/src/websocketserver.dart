@@ -1,6 +1,7 @@
 part of rtc_server;
 
 class WebSocketServer extends PacketHandler implements Server, ContainerContentsEventListener {
+  static final _logger = new Logger("dart_rtc_server.WebSocketServer");
   /* The http server */
   HttpServer _httpServer;
 
@@ -24,8 +25,6 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
 
   // 1 minute
   static const int _timerTickInterval = 6000;
-
-  Logger logger = new Logger();
 
   /* Timer */
   Timer _timer;
@@ -57,7 +56,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
    * TODO: Find out howto catch ctrl+c
    */
   void stop() {
-    logger.Info("Stopping server");
+    _logger.info("Stopping server");
     _timer.cancel();
     //_httpServer.close();
   }
@@ -73,7 +72,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     _path = path;
     _port = port;
 
-    logger.Info("Starting server on ip $ip and port $port");
+    _logger.info("Starting server on ip $ip and port $port");
 
     HttpServer.bind(_ip, _port).then((HttpServer server) {
       _httpServer = server;
@@ -83,9 +82,9 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
         webSocket.listen((data) {
             Packet p = getPacket(data);
             if (p != null) {
-              logger.Debug("Incoming packet (${p.packetType})");
+              _logger.fine("Incoming packet (${p.packetType})");
               if (!executeHandlerFor(webSocket, p))
-                logger.Warning("No handler found for packet (${p.packetType})");
+                _logger.warning("No handler found for packet (${p.packetType})");
             }
 
         }, onDone : () {
@@ -93,7 +92,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
             User u = _container.findUserByConn(webSocket);
             if (u != null) {
               u._onClose(webSocket.closeCode, webSocket.closeReason);
-              new Logger().Debug("User ${u.id} closed connection (${webSocket.closeCode}) (${webSocket.closeReason})");
+              _logger.fine("User ${u.id} closed connection (${webSocket.closeCode}) (${webSocket.closeReason})");
             }
         }, onError : ( e) {/*
           User u = _container.findUserByConn(webSocket);
@@ -125,11 +124,11 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
 
   void onCountChanged(BaseContainer bc) {
     if (bc is UserContainer)
-      logger.Info("Users: ${bc.count}");
+      _logger.info("Users: ${bc.count}");
   }
 
   String displayStatus() {
-    logger.Info("Users: ${_container.userCount}");
+    _logger.info("Users: ${_container.userCount}");
   }
 
   void onTimerTick(Timer t) {
@@ -137,7 +136,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
       doAliveChecks();
       //displayStatus();
     } catch(e) {
-      logger.Error("onTimerTick: $e");
+      _logger.severe("onTimerTick: $e");
     }
   }
 
@@ -156,10 +155,10 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
         sendPacket(u.connection, new PingPacket.With(u.id));
       } else if(u.needsKill(currentTime)) {
         try {
-          logger.Debug("Closing dead socket");
+          _logger.fine("Closing dead socket");
           u.connection.close(1000, "Closing dead socket");
         } catch (e) {
-          logger.Error("Closing dead socket threw $e");
+          _logger.severe("Closing dead socket threw $e");
         }
       }
     }
@@ -171,7 +170,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
    * @param p Packet to send
    */
   void sendPacket(WebSocket c, Packet p) {
-    logger.Debug("Sending packet (${p.packetType})");
+    _logger.fine("Sending packet (${p.packetType})");
     sendToClient(c, PacketFactory.get(p));
   }
 
@@ -213,7 +212,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
     User u = _container.findUserByConn(c);
     if (u != null) {
       c.close(1003, "Already HELO'd");
-      logger.Warning("User exists, disconnecting");
+      _logger.warning("User exists, disconnecting");
     }
 
 
@@ -254,13 +253,13 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
       User receiver = _container.findUserById(p.id);
 
       if (sender == null || receiver == null) {
-        logger.Warning("Sender or Receiver not found");
+        _logger.warning("Sender or Receiver not found");
         return;
       }
       sender.lastActivity = new DateTime.now().millisecondsSinceEpoch;
 
       if (sender == receiver) {
-        logger.Warning("Sending to self, abort");
+        _logger.warning("Sending to self, abort");
         return;
       }
       receiver.lastActivity = new DateTime.now().millisecondsSinceEpoch;
@@ -269,7 +268,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
 
       sendPacket(receiver.connection, new DescriptionPacket.With(p.sdp, p.type, sender.id, ""));
     } catch (e) {
-      logger.Error("handleIncomingDescription: $e");
+      _logger.severe("handleIncomingDescription: $e");
     }
   }
 
@@ -282,20 +281,20 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
       User receiver = _container.findUserById(ice.id);
 
       if (sender == null || receiver == null) {
-        logger.Warning("Sender or Receiver not found");
+        _logger.warning("Sender or Receiver not found");
         return;
       }
       sender.lastActivity = new DateTime.now().millisecondsSinceEpoch;
 
       if (sender == receiver) {
-        logger.Warning("Sending to self, abort");
+        _logger.warning("Sending to self, abort");
         return;
       }
       receiver.lastActivity = new DateTime.now().millisecondsSinceEpoch;
 
       sendPacket(receiver.connection, new IcePacket.With(ice.candidate, ice.sdpMid, ice.sdpMLineIndex, sender.id));
     } catch(e) {
-      logger.Error("handleIncomingIce: $e");
+      _logger.severe("handleIncomingIce: $e");
     }
   }
 
@@ -304,23 +303,23 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
    */
   void handleIncomingPong(PongPacket p, WebSocket c) {
     try {
-      logger.Debug("Handling pong");
+      _logger.fine("Handling pong");
       User sender = _container.findUserByConn(c);
       sender.lastActivity = new DateTime.now().millisecondsSinceEpoch;
     } catch(e) {
-      logger.Error("handleIncomingPong: $e");
+      _logger.severe("handleIncomingPong: $e");
     }
   }
 
   void handleIncomingFile(FilePacket p, WebSocket c) {
     try {
-      logger.Debug("Handling File packet");
+      _logger.fine("Handling File packet");
 
       User sender = _container.findUserByConn(c);
       User receiver = _container.findUserById(p.id);
 
       if (sender == null || receiver == null) {
-        logger.Warning("Sender or Receiver not found");
+        _logger.warning("Sender or Receiver not found");
         return;
       }
 
@@ -330,7 +329,7 @@ class WebSocketServer extends PacketHandler implements Server, ContainerContents
       p.id = sender.id;
       sendPacket(receiver.connection, p);
     } catch(e) {
-      logger.Error("handleIncomingPong: $e");
+      _logger.severe("handleIncomingPong: $e");
     }
   }
 }

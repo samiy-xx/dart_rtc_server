@@ -1,6 +1,7 @@
 part of rtc_server;
 
 class Channel extends GenericEventTarget<ChannelEventListener> implements UserConnectionEventListener {
+  static final _logger = new Logger("dart_rtc_server.Channel");
   /* Parent container */
   ChannelContainer _container;
   
@@ -54,7 +55,7 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
    * Implements UserConnectionEventListener
    */
   void onClose(User u, int status, String reason) {
-    new Logger().Debug("(channel.dart) onClose fired for user ${u.id}");
+    _logger.fine("(channel.dart) onClose fired for user ${u.id}");
     leave(u);
   }
   
@@ -79,7 +80,7 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
     _notifyUserJoined(u);
     _sendJoinPackets(u);
     
-    new Logger().Debug("User ${u.id} joins channel $_id");
+    _logger.fine("User ${u.id} joins channel $_id");
     return true;
   }
   
@@ -113,13 +114,13 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
    * Notify listeners
    */
   void leave(User u) {
-    new Logger().Debug("(channel.dart) User ${u.id} leaving channel $id");
+    _logger.fine("(channel.dart) User ${u.id} leaving channel $id");
     
     if (_owner != null && u == _owner)
       _owner = null;
     
     if (_removeUser(u) == null)
-      new Logger().Warning("Attempted to remove user ${u.id} from container, but returned null");
+      _logger.warning("Attempted to remove user ${u.id} from container, but returned null");
     _notifyUserLeft(u);
     
     sendToAll(new ByePacket.With(u.id));

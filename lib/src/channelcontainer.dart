@@ -1,8 +1,7 @@
 part of rtc_server;
 
 class ChannelContainer extends BaseChannelContainer implements ChannelConnectionEventListener{
-  /* logger singleton instance */
-  Logger logger = new Logger();
+  static final _logger = new Logger("dart_rtc_server.ChannelContainer");
   
   /* user limit for channels */
   int _channelLimit = 20;
@@ -24,13 +23,13 @@ class ChannelContainer extends BaseChannelContainer implements ChannelConnection
   }
   
   void onLeaveChannel(Channel c, User u) {
-    logger.Debug("(channelcontainer.dart) User ${u.id} left channel ${c.id}");
+    _logger.fine("(channelcontainer.dart) User ${u.id} left channel ${c.id}");
     
     if (c.userCount == 0) {
-      logger.Debug("(channelcontainer.dart) channel ${c.id} usercount is 0, removing channel");
+      _logger.fine("(channelcontainer.dart) channel ${c.id} usercount is 0, removing channel");
       removeChannel(c);
     } else {
-      logger.Debug("(channelcontainer.dart) channel ${c.id} usercount is ${c.userCount}");
+      _logger.fine("(channelcontainer.dart) channel ${c.id} usercount is ${c.userCount}");
     }
   }
   
@@ -48,7 +47,7 @@ class ChannelContainer extends BaseChannelContainer implements ChannelConnection
    * Remove channel and kill users if any
    */
   bool removeChannel(Channel c) {
-    logger.Debug("Removing Channel ${c.id}");
+    _logger.fine("Removing Channel ${c.id}");
     
     if (_list.contains(c)) {
       if (c.userCount > 0)

@@ -1,6 +1,7 @@
 part of rtc_server;
 
 class BinaryReader {
+  static final _logger = new Logger("dart_rtc_server.BinaryReader");
   final int FULL_BYTE = 0xFF;
   final int NULL_BYTE = 0x00;
   int _length = 0;
@@ -123,7 +124,7 @@ class BinaryReader {
         Packet p = PacketFactory.getPacketFromString(new String.fromCharCodes(_buffer));
         //_signalReadPacket(p);
       } on InvalidPacketException catch(e, s) {
-        new Logger().Error(e.msg);
+        _logger.severe(e.msg);
       }
 
   }

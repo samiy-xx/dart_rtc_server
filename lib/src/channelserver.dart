@@ -1,6 +1,7 @@
 part of rtc_server;
 
 class ChannelServer extends WebSocketServer implements ContainerContentsEventListener{
+  static final _logger = new Logger("dart_rtc_server.ChannelServer");
   ChannelContainer _channelContainer;
 
   ChannelServer() : super() {
@@ -15,12 +16,12 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
   }
 
   void onCountChanged(BaseContainer bc) {
-    new Logger().Info("Container count changed ${bc.count}");
+    _logger.info("Container count changed ${bc.count}");
     displayStatus();
   }
 
   String displayStatus() {
-    new Logger().Info("Users: ${_container.userCount} Channels: ${_channelContainer.channelCount}");
+    _logger.info("Users: ${_container.userCount} Channels: ${_channelContainer.channelCount}");
   }
 
   void handleIncomingNick(ChangeNickCommand p, WebSocket c) {
@@ -53,8 +54,8 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
         chan.join(u);
       }
     } catch(e, s) {
-      new Logger().Error(e);
-      new Logger().Info(s);
+      _logger.severe(e);
+      _logger.info(s);
     }
   }
 
@@ -74,12 +75,12 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
     User user = _container.findUserByConn(c);
 
     if (user == null) {
-      new Logger().Warning("(channelserver.dart) User was not found");
+      _logger.warning("(channelserver.dart) User was not found");
       return;
     }
 
     if (channel == null) {
-      new Logger().Warning("(channelserver.dart) Channel was not found");
+      _logger.warning("(channelserver.dart) Channel was not found");
       return;
     }
 
@@ -88,7 +89,7 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
     }
   }
   void handleChannelMessage(ChannelMessage cm, WebSocket c) {
-    new Logger().Debug("Handling channel message to channel ${cm.channelId}");
+    _logger.fine("Handling channel message to channel ${cm.channelId}");
     try {
 
       if (cm.channelId == null || cm.channelId.isEmpty)
@@ -97,20 +98,20 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
       User user = _container.findUserByConn(c);
 
       if (user == null) {
-        new Logger().Warning("(channelserver.dart) User was not found");
+        _logger.warning("(channelserver.dart) User was not found");
         return;
       }
 
       Channel channel = _channelContainer.findChannel(cm.channelId);
       if (channel.isInChannel(user)) {
-        new Logger().Debug("Sending to all users in channel");
+        _logger.fine("Sending to all users in channel");
         channel.sendToAllExceptSender(user, cm);
       }
 
     } on NoSuchMethodError catch(e) {
-      new Logger().Error("Error: $e");
+      _logger.severe("Error: $e");
     } catch(e) {
-      new Logger().Error("Error: $e");
+      _logger.severe("Error: $e");
     }
   }
   void handleUserMessage(UserMessage um, WebSocket c) {
@@ -123,7 +124,7 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
       User other = _container.findUserById(um.id);
 
       if (user == null || other == null) {
-        new Logger().Warning("(channelserver.dart) User was not found");
+        _logger.warning("(channelserver.dart) User was not found");
         return;
       }
 
@@ -139,9 +140,9 @@ class ChannelServer extends WebSocketServer implements ContainerContentsEventLis
       //sendToClient(other.connection, PacketFactory.get(um));
 
     } on NoSuchMethodError catch(e) {
-      new Logger().Error("Error: $e");
+      _logger.severe("Error: $e");
     } catch(e) {
-      new Logger().Error("Error: $e");
+      _logger.severe("Error: $e");
     }
   }
 }

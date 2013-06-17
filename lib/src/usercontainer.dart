@@ -1,8 +1,7 @@
 part of rtc_server;
 
 class UserContainer extends BaseUserContainer implements UserConnectionEventListener {
-  /* logger singleton instance */
-  Logger logger = new Logger();
+  static final _logger = new Logger("dart_rtc_server.UserContainer");
 
   /** Returns a list of users */
   List<User> get users => _list;
@@ -21,7 +20,7 @@ class UserContainer extends BaseUserContainer implements UserConnectionEventList
    * Implements UserConnectionEventListener
    */
   void onClose(User u, int status, String reason) {
-    logger.Debug("(usercontainer.dart) Removing user ${u.id}");
+    _logger.fine("(usercontainer.dart) Removing user ${u.id}");
     removeUser(u);
   }
 

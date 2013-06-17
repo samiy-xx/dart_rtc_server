@@ -25,7 +25,6 @@ part "tests/channelcontainertests.dart";
 part "tests/containertests.dart";
 
 void main() {
-  new Logger().setLevel(LogLevel.ERROR);
   useVMConfiguration();
   new ChannelTests().run();
   new QueueChannelTests().run();

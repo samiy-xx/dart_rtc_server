@@ -1,6 +1,7 @@
 part of rtc_server;
 
 class QueueServer extends WebSocketServer implements ContainerContentsEventListener {
+  static final _logger = new Logger("dart_rtc_server.QueueServer");
   QueueContainer _queueContainer;
 
   QueueServer() : super() {
@@ -16,12 +17,12 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
 
 
   void onCountChanged(BaseContainer bc) {
-    new Logger().Info("Container count changed ${bc.count}");
+    _logger.info("Container count changed ${bc.count}");
     displayStatus();
   }
 
   String displayStatus() {
-    new Logger().Info("Users: ${_container.userCount} Channels: ${_queueContainer.channelCount}");
+    _logger.info("Users: ${_container.userCount} Channels: ${_queueContainer.channelCount}");
   }
 
   // Override
@@ -40,8 +41,8 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
         chan = _queueContainer.createChannelWithId(hp.channelId);
       chan.join(u);
     } catch(e, s) {
-      new Logger().Error(e);
-      new Logger().Info(s);
+      _logger.severe(e);
+      _logger.info(s);
     }
   }
 
@@ -59,7 +60,7 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
       User other = _container.findUserById(p.id);
 
       if (user == null || other == null) {
-        new Logger().Warning("(channelserver.dart) User was not found");
+        _logger.warning("(channelserver.dart) User was not found");
         return;
       }
 
@@ -67,7 +68,7 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
       if (user == channel.owner)
         channel.leave(other);
     } catch(e) {
-      new Logger().Error("Error: $e");
+      _logger.severe("Error: $e");
     }
   }
 
@@ -77,7 +78,7 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
       User other = _container.findUserById(p.id);
 
       if (user == null || other == null) {
-        new Logger().Warning("(channelserver.dart) User was not found");
+        _logger.warning("(channelserver.dart) User was not found");
         return;
       }
 
@@ -85,7 +86,7 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
       if (user == channel.owner)
         channel.next();
     } catch(e) {
-      new Logger().Error("Error: $e");
+      _logger.severe("Error: $e");
     }
   }
 
@@ -99,7 +100,7 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
       User other = _container.findUserById(um.id);
 
       if (user == null || other == null) {
-        new Logger().Warning("(channelserver.dart) User was not found");
+        _logger.warning("(channelserver.dart) User was not found");
         return;
       }
 
@@ -108,9 +109,9 @@ class QueueServer extends WebSocketServer implements ContainerContentsEventListe
       sendToClient(other.connection, PacketFactory.get(um));
 
     } on NoSuchMethodError catch(e) {
-      new Logger().Error("Error: $e");
+      _logger.severe("Error: $e");
     } catch(e) {
-      new Logger().Error("Error: $e");
+      _logger.severe("Error: $e");
     }
   }
 }

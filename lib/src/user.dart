@@ -1,6 +1,7 @@
 part of rtc_server;
 
 class _User extends GenericEventTarget<UserEventListener> implements Comparable {
+  static final _logger = new Logger("dart_rtc_server._User");
   /* talking to */
   List<User> _talkingTo;
 
@@ -40,9 +41,7 @@ class _User extends GenericEventTarget<UserEventListener> implements Comparable 
   /** Set the timestamp for last connection */
   set timeSinceLastConnection(int value) => _timeSinceLastConnection = value;
 
-  /** Logger =) */
-  Logger logger = new Logger();
-
+  
   UserContainer _container;
 
   _User(String id) : this.With(null, id);
@@ -59,7 +58,7 @@ class _User extends GenericEventTarget<UserEventListener> implements Comparable 
    */
   void _onClose(int status, String reason) {
     _isDead = true;
-    logger.Debug("User connection closed with status $status and reason $reason");
+    _logger.info("User connection closed with status $status and reason $reason");
     //_container.removeUser(this);
     _talkingTo.forEach((User u) => u.hangup(this));
 
@@ -156,9 +155,9 @@ class User extends _User{
     try {
       _conn.close(1000, "Leaving");
     } on Exception catch(e) {
-      logger.Error("terminate Exception: $e");
+      _logger.severe("terminate Exception: $e");
     } catch (e) {
-      logger.Error("terminate Error: $e");
+      _logger.severe("terminate Error: $e");
     }
   }
 

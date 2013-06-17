@@ -1,14 +1,14 @@
 part of rtc_server;
 
 class QueueContainer extends ChannelContainer implements ChannelQueueEventListener {
-  
+  static final _logger = new Logger("dart_rtc_server.QueueContainer");
   QueueContainer(Server s) : super(s) {
     _channelLimit = 2;
   }
   
   void onEnterQueue(Channel c, User u, int count, int position) {
     String positionToDisplay = (position + 1).toString();
-    new Logger().Debug("User ${u.id} enters queue with $count users at position $position");
+    _logger.fine("User ${u.id} enters queue with $count users at position $position");
     _server.sendPacket(u.connection, new QueuePacket.With(u.id, c.id, positionToDisplay));
     print("test1");
     if (c.owner != null)
@@ -17,7 +17,7 @@ class QueueContainer extends ChannelContainer implements ChannelQueueEventListen
   
   void onMoveInQueue(Channel c, User u, int count, int position) {
     String positionToDisplay = (position + 1).toString();
-    new Logger().Debug("User ${u.id} moves in queue with $count users at position $position");
+    _logger.fine("User ${u.id} moves in queue with $count users at position $position");
     _server.sendPacket(u.connection, new QueuePacket.With(u.id, c.id, positionToDisplay));
     print("test2");
     if (c.owner != null)
@@ -25,7 +25,7 @@ class QueueContainer extends ChannelContainer implements ChannelQueueEventListen
   }
   
   void onLeaveQueue(Channel c, User u) {
-    new Logger().Debug("User ${u.id} leaves queue");
+    _logger.fine("User ${u.id} leaves queue");
     _server.sendPacket(u.connection, new QueuePacket.With(u.id, c.id, "0"));
     print("test3");
     if (c.owner != null)
