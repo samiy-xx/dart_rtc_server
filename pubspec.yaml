@@ -3,7 +3,7 @@ version: 0.1.0
 author: Sami Ylonen <sami.ylonen@gmail.com>
 description: A Dart WebRTC signaling server
 dependencies:
-  args: 0.5.17
+  args: any
   dart_rtc_common:
     git: git://github.com/samiy-xx/dart_rtc_common.git
   logging_handlers: 0.5.0+2
