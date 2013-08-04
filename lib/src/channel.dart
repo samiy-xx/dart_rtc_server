@@ -4,29 +4,29 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
   static final _logger = new Logger("dart_rtc_server.Channel");
   /* Parent container */
   ChannelContainer _container;
-  
+
   /* Room id */
   String _id;
-  
+
   /* max amount of users in room */
   int _limit;
-  
+
   /* Owner of the channel */
   User _owner;
-  
+
   /* users */
   List<User> _users;
-  
+
   /**
    * Returns users in channel
    */
   List<User> get users => _users;
-  
+
   /**
    * Returns true if users length is less than limit
    */
   bool get canJoin => _users.length < _limit;
-  
+
   /**
    * Limit of users in channel
    */
@@ -36,13 +36,13 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
    * Current usercount
    */
   int get userCount => _users.length;
-  
+
   User get owner => _owner;
   /**
    * Channel id
    */
   String get id => _id;
-  
+
   Channel(String id, int limit) : this.With(null, id, limit);
   Channel.With(ChannelContainer rc, String id, int limit) {
     _id = id;
@@ -50,7 +50,7 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
     _users = new List<User>();
     _container = rc;
   }
-  
+
   /**
    * Implements UserConnectionEventListener
    */
@@ -58,50 +58,51 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
     _logger.fine("(channel.dart) onClose fired for user ${u.id}");
     leave(u);
   }
-  
+
   /**
    * Sets the channel user limit and notifies all users in channel.
    */
   void setChannelLimit(int l) {
     _limit = l;
+    _logger.fine("Setting new user limit ($l) to channel $id");
     _users.forEach((User u) {
       _container.getServer().sendPacket(u.connection, new ChannelPacket.With(u.id, id, u == owner, userCount, _limit));
     });
   }
-  
+
   /**
    * Joins the room
    */
   bool join(User u) {
     if (!_addUser(u))
       return false;
-    
+
     u.subscribe(this);
     _notifyUserJoined(u);
     _sendJoinPackets(u);
-    
+
     _logger.fine("User ${u.id} joins channel $_id");
     return true;
   }
-  
+
   void _sendJoinPackets(User user) {
     if (_container == null)
       return;
-    
+
     // Get the server
     Server server = _container.getServer();
-    
+
     // Create a join packet to notify existing users in room
     Packet jp = new JoinPacket.With(_id, user.id);
-    
+
     // Iterate trough all the users in this room
     _users.forEach((User u) {
-      // If the newUser is not the current user in container 
+      // If the newUser is not the current user in container
       if (u != user) {
-        
+
         // Create a Id packet for newUser notifying all existing users in channel
         Packet ip = new IdPacket.With(u.id, _id);
-        
+
         server.sendPacket(u.connection, jp);
         server.sendPacket(user.connection, ip);
       }
@@ -115,17 +116,17 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
    */
   void leave(User u) {
     _logger.fine("(channel.dart) User ${u.id} leaving channel $id");
-    
+
     if (_owner != null && u == _owner)
       _owner = null;
-    
+
     if (_removeUser(u) == null)
       _logger.warning("Attempted to remove user ${u.id} from container, but returned null");
     _notifyUserLeft(u);
-    
+
     sendToAll(new ByePacket.With(u.id));
   }
-  
+
   /**
    * Force all users to leave the channel
    */
@@ -135,7 +136,7 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
       leave(u);
     }
   }
-  
+
   /*
    * Adds a user to channel if user does not exist already
    */
@@ -148,23 +149,23 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
     }
     return false;
   }
-  
+
   /*
    * Removes user from channel
    */
   User _removeUser(User u) {
     int index = _users.indexOf(u);
-    
+
     if (index > -1) {
       return _users.removeAt(index);
     }
     return null;
   }
-  
+
   bool isInChannel(User u) {
-    return _users.contains(u); 
+    return _users.contains(u);
   }
-  
+
   /*
    * Notify listeners about the user leaving
    */
@@ -173,45 +174,45 @@ class Channel extends GenericEventTarget<ChannelEventListener> implements UserCo
       l.onLeaveChannel(this, u);
     });
   }
-  
+
   /*
    * Notify listeners about the user joining
    */
   void _notifyUserJoined(User u) {
     listeners.where((l) => l is ChannelConnectionEventListener).forEach((ChannelConnectionEventListener l) {
       l.onEnterChannel(this, u);
-    }); 
+    });
   }
-  
+
   /**
    * Send packet to everyone in channel
    */
   void sendToAll(Packet p) {
     if (_container == null)
       return;
-    
+
     _users.forEach((User u) {
         if (u.isDead)
           print("WARN: user ${u.id} is dead");
-        
+
         _container.getServer().sendPacket(u.connection, p);
     });
   }
-  
+
   /**
    * Send packet to everyone in channel except the sender
    */
   void sendToAllExceptSender(User sender, Packet p) {
     if (_container == null)
       return;
-    
+
     _users.forEach((User u) {
       if (sender != u) {
         _container.getServer().sendPacket(u.connection, p);
       }
     });
   }
-  
+
   /**
    * Equality operator ==
    * Check that id strings match
